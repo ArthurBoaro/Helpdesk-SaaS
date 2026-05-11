@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply } from "fastify";
 import { SessionController } from "./controllers/SessionController.js";
+import { ChatController } from "./controllers/ChatController.js";
 
 export async function routes (fastify: FastifyInstance, options: FastifyPluginOptions) {
 
@@ -8,4 +9,17 @@ export async function routes (fastify: FastifyInstance, options: FastifyPluginOp
         return new SessionController().handle(request, reply);
     });
 
+    // POST /chat endpoint
+    fastify.post("/chat", async (request: FastifyRequest<{
+            Body: {
+                sessionId: string;
+                message: string;
+                metadata?: {
+                    userId?: string;
+                    channel?: string;
+                };
+            }
+        }>, reply: FastifyReply) => {
+        return new ChatController().handle(request, reply);
+    });
 };

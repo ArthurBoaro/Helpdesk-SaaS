@@ -9,10 +9,10 @@ import { createTicket } from "../tools/createTicket.js";
 interface ChatProps {
     sessionId: string;
     content: string;
-    metadata?: {
+    metadata?: | {
         userId?: string;
         channel?: string;
-    };
+    } | undefined;
 }
 
 
