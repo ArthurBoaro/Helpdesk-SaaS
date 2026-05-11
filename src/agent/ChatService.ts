@@ -166,7 +166,18 @@ class ChatService {
         }
 
 
-        
+        // Unknown Flow
+        if (intent == "UNKNOWN") {
+            // Assistant Message for missing contact
+            assistantMessage = "Desculpe, mas não entendi a sua mensagem. Poderia repetir a mensagem para clarificá-la?";
+
+            // Save Thought Event
+            type = "thought";
+            name = "unknown_intent";
+            data = { "intent": "UNKNOWN" };
+            savedThoughtEvent = await eventRepository.create({sessionId, type, name, data});
+            events.push(savedThoughtEvent);
+        }
 
         // Save assistant message
         savedAssistantMessage = await messageRepository.create({sessionId, role: "ASSISTANT", content: assistantMessage, metadata}); 
