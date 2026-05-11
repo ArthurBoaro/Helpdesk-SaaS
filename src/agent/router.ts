@@ -10,7 +10,8 @@ export function detectIntent(message: string): Intent {
 
     // Set message to lower case
     const messageLowerCase = message.toLowerCase();
-    
+    // Email Regex
+    const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
     // List of status keywords
     const statusKeywords = ["status", "fora do ar", "instabilidade", "conectado", "desconectado"];
     // Verify if message contains any status keywords
@@ -20,10 +21,10 @@ export function detectIntent(message: string): Intent {
     }
 
     // List of support keywords
-    const supportKeywords = ["erro", "error", "login", "ajuda", "suporte"];
+    const supportKeywords = ["erro", "error", "login", "ajuda", "suporte", "email"];
     // Verify if message contains any support keywords
     const containsSupport = supportKeywords.some(keyword => messageLowerCase.includes(keyword));
-    if (containsSupport) {
+    if (containsSupport || emailRegex.test(message)) {
         return "SUPPORT"
     }
 

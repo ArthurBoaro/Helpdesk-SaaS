@@ -22,6 +22,13 @@ class MessageRepository {
             }
         });
     }
+    // Function to get Messages by Id in the DB with Prisma
+    async getMessagesById(sessionId: string) {
+        return prismaClient.message.findMany({
+            where: {sessionId: sessionId},
+            orderBy: {created_at: "asc"}
+        });
+    }
 }
 
 export { MessageRepository }
