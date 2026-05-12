@@ -166,6 +166,44 @@ class ChatService {
         }
 
 
+        // Billing Flow
+        if (intent == "BILLING") {
+            // Tool Call Create Ticket
+            const titleTicket = userMessage;
+            const descriptionTicket = userMessage;
+            const priority = "medium";
+            toolResponse = await createTicket({title: titleTicket, description: descriptionTicket, priority, contact});
+                    
+            // Save Tool Call Create Ticket Event
+            type = "tool_call";
+            name = "createTicket";
+            data = {
+                    title: titleTicket,
+                    description: descriptionTicket,
+                    priority,
+                    contact
+                };
+            savedToolCallEvent = await eventRepository.create({sessionId, type, name, data});
+            events.push(savedToolCallEvent);
+                    
+            // Save Tool Call Create Ticket Result Event
+            type = "tool_result";
+            data = toolResponse;
+            savedToolResultEvent = await eventRepository.create({sessionId, type, name, data});
+            events.push(savedToolResultEvent);
+                    
+            // Create Assistant Message
+            assistantMessage = `Ticket: ${toolResponse.ticketId}`;
+        }
+
+
+        // Smalltalk Flow
+        if (intent == "SMALLTALK") {
+            // Create Assistant Message
+            assistantMessage = "Olá, tudo bem? Como posso te ajudar?";
+        }
+
+
         // Unknown Flow
         if (intent == "UNKNOWN") {
             // Assistant Message for missing contact
