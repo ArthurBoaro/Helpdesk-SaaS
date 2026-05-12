@@ -21,7 +21,7 @@ export function detectIntent(message: string): Intent {
     }
 
     // List of support keywords
-    const supportKeywords = ["erro", "error", "login", "ajuda", "suporte", "email"];
+    const supportKeywords = ["erro", "error", "login", "ajuda", "suporte", "email", "resetar", "reset", "senha"];
     // Verify if message contains any support keywords
     const containsSupport = supportKeywords.some(keyword => messageLowerCase.includes(keyword));
     if (containsSupport || emailRegex.test(message)) {

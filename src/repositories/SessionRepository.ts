@@ -13,10 +13,14 @@ class SessionRepository {
             }
         });
     }
-    // Function to get Session Messages with SessionId in the DB with Prisma
+    // Function to get Session Messages and Events with SessionId in the DB with Prisma
     async get({sessionId}: SessionProps) {
-        return prismaClient.message.findMany({
-            where: {sessionId: sessionId}
+        return prismaClient.session.findUnique({
+            where: {sessionId: sessionId},
+            include: {
+                messages: true,
+                events: true
+            }
         });
     }
 }

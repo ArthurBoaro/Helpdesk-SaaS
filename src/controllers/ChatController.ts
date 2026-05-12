@@ -17,7 +17,7 @@ class ChatController {
         const { sessionId, message, metadata } = request.body;
         // Initialize service and create session
         const chatService = new ChatService();
-        const chat = chatService.execute({sessionId, content: message, metadata});
+        const chat = await chatService.execute({sessionId, content: message, metadata});
         // Return response
         return reply.send(chat)
     }
