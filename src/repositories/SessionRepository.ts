@@ -13,6 +13,12 @@ class SessionRepository {
             }
         });
     }
+    // Function to get Session Messages with SessionId in the DB with Prisma
+    async get({sessionId}: SessionProps) {
+        return prismaClient.message.findMany({
+            where: {sessionId: sessionId}
+        });
+    }
 }
 
 export { SessionRepository }

@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply } from "fastify";
 import { SessionController } from "./controllers/SessionController.js";
 import { ChatController } from "./controllers/ChatController.js";
+import { SessionMessagesController } from "./controllers/SessionMessagesController.js";
 
 export async function routes (fastify: FastifyInstance, options: FastifyPluginOptions) {
 
@@ -21,5 +22,14 @@ export async function routes (fastify: FastifyInstance, options: FastifyPluginOp
             }
         }>, reply: FastifyReply) => {
         return new ChatController().handle(request, reply);
+    });
+
+    // GET /sessions/:sessionId/messages endpoint
+    fastify.get("/sessions/:sessionId/messages", async (request: FastifyRequest<{
+            Params: {
+                sessionId: string;
+            }
+        }>, reply: FastifyReply) => {
+        return new SessionMessagesController().handle(request, reply);
     });
 };
