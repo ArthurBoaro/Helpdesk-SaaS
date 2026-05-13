@@ -4,7 +4,7 @@ import { getServiceStatus } from "../tools/getServiceStatus.js";
 import { MessageRepository } from "../repositories/MessageRepository.js";
 import { EventRepository } from "../repositories/EventRepository.js";
 import { createTicket } from "../tools/createTicket.js";
-
+import { searchKBCache } from "../cache/searchKB.cache.js";
 
 interface ChatProps {
     sessionId: string;
@@ -90,17 +90,44 @@ class ChatService {
 
         // Support Flow
         if (intent == "SUPPORT") {
-            // Tool Call SearchKB
-            toolResponse = searchKB(userMessage) ?? [];
+            // Create seachKB Cache
+            const cachedResponse = searchKBCache.get(userMessage);
+            // Check if searchKBCache exists
+            if (cachedResponse) {
+                // Tool Response gets cachedResponse
+                toolResponse = cachedResponse;
+                // Save searchKBCache Hit Event
+                type = "cache_hit";
+                name = "searchKBCache";
+                data = {
+                    query: userMessage
+                };
+                savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
+                events.push(savedToolCallEvent);
+            } else {
+                // Save searchKBCache Miss Event
+                type = "cache_miss";
+                name = "searchKBCache";
+                data = {
+                    query: userMessage
+                };
+                savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
+                events.push(savedToolCallEvent);
+                // Tool Call SearchKB
+                toolResponse = searchKB(userMessage) ?? [];
+                searchKBCache.set(userMessage, toolResponse);
+                // Save Tool Call SearchKB Event
+                type = "tool_call";
+                name = "searchKB";
+                data = {
+                    query: userMessage
+                };
+                savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
+                events.push(savedToolCallEvent);
+            }
+            
 
-            // Save Tool Call SearchKB Event
-            type = "tool_call";
-            name = "searchKB";
-            data = {
-                query: userMessage
-            };
-            savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
-            events.push(savedToolCallEvent);
+            
 
             // Save Tool Call SearchKB Result Event
             type = "tool_result";

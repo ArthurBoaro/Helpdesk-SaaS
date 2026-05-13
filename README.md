@@ -179,7 +179,7 @@ Processa mensagens do usuário.
 {
   "sessionId": "uuid",
   "assistantMessage": "api: ok, webhook: down, dashboard: degraded",
-  "events": []
+  "events": [...]
 }
 ```
 
@@ -191,7 +191,7 @@ Processa mensagens do usuário.
 {
   "sessionId": "uuid",
   "assistantMessage": "Ticket: TICKET-123",
-  "events": []
+  "events": [...]
 }
 ```
 
@@ -209,8 +209,8 @@ Retorna:
 ```json
 {
   "sessionId": "uuid",
-  "messages": [],
-  "events": []
+  "messages": [...],
+  "events": [...]
 }
 ```
 
@@ -308,7 +308,7 @@ Trade-off:
 
 - Streaming SSE/Chunked
 - Rate limit por sessionId
-- Cache para searchKB
+- Plannner + Executor
 - Guardrails de output
 
 ---
