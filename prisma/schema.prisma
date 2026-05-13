@@ -35,7 +35,7 @@ model Message {
   sessionId String
   role String
   content String
-  metada Json?
+  metadata Json?
   session Session @relation(fields: [sessionId], references: [sessionId])
   created_at DateTime @default(now())
 }

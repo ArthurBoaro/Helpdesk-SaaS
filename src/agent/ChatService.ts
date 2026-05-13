@@ -15,13 +15,22 @@ interface ChatProps {
     } | undefined;
 }
 
+interface ToolEvent {
+    type: string;
+    name: string;
+    data: unknown;
+}
+
 
 class ChatService {
+    constructor(
+        private messageRepository = new MessageRepository(),
+        private eventRepository = new EventRepository()
+    ) {}
+
     async execute({sessionId, content, metadata}: ChatProps) {
 
         // Initializa variables
-        const messageRepository = new MessageRepository();
-        const eventRepository = new EventRepository();
         const userMessage = content;
         let status: any = {};
         let savedThoughtEvent: any = {};
@@ -40,7 +49,7 @@ class ChatService {
         const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
         
         // Save user message
-        savedUserMessage = await messageRepository.create({sessionId, role: "USER", content: userMessage, metadata});
+        savedUserMessage = await this.messageRepository.create({sessionId, role: "USER", content: userMessage, metadata});
         
         // Detect Intent
         const intent = detectIntent(userMessage); 
@@ -49,7 +58,7 @@ class ChatService {
         type = "thought";
         name = "router";
         data = { intent };
-        savedThoughtEvent = await eventRepository.create({sessionId, type, name, data});
+        savedThoughtEvent = await this.eventRepository.create({sessionId, type, name, data});
         events.push(savedThoughtEvent);
 
 
@@ -62,13 +71,13 @@ class ChatService {
             type = "tool_call";
             name = "getServiceStatus";
             data = {};
-            savedToolCallEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolCallEvent);
 
             // Save Tool GetServiceStatus Result Event
             type = "tool_result";
             data = status;
-            savedToolResultEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolResultEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolResultEvent);
 
             // Create Assistant Message
@@ -82,7 +91,7 @@ class ChatService {
         // Support Flow
         if (intent == "SUPPORT") {
             // Tool Call SearchKB
-            toolResponse = searchKB(userMessage);
+            toolResponse = searchKB(userMessage) ?? [];
 
             // Save Tool Call SearchKB Event
             type = "tool_call";
@@ -90,17 +99,17 @@ class ChatService {
             data = {
                 query: userMessage
             };
-            savedToolCallEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolCallEvent);
 
             // Save Tool Call SearchKB Result Event
             type = "tool_result";
             data = toolResponse;
-            savedToolResultEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolResultEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolResultEvent);
 
             // Check if SearchKB solved
-            solvedSupport = toolResponse.length > 0;
+            solvedSupport = Array.isArray(toolResponse) && toolResponse.length > 0;
             if (solvedSupport) {
 
                 // Create Assistant Message
@@ -109,10 +118,9 @@ class ChatService {
             } else {
 
                 // Search Session Historic
-                const previousMessages = await messageRepository.getMessagesById(sessionId);
-
+                const previousMessages = await this.messageRepository.getMessagesById(sessionId) ?? [];
                 // Get only previous User Messages
-                const previousUserMessages = previousMessages.filter(message => message.role == "USER");
+                const previousUserMessages = Array.isArray(previousMessages) ? previousMessages.filter(message => message.role == "USER"): [];
 
                 // For to check if contact exists in previous messages in the historic
                 for (let message of previousUserMessages) {
@@ -131,7 +139,7 @@ class ChatService {
                     type = "thought";
                     name = "missing_information";
                     data = { "field": "contact" };
-                    savedThoughtEvent = await eventRepository.create({sessionId, type, name, data});
+                    savedThoughtEvent = await this.eventRepository.create({sessionId, type, name, data});
                     events.push(savedThoughtEvent);
 
                 } else {
@@ -150,13 +158,13 @@ class ChatService {
                         priority,
                         contact
                     };
-                    savedToolCallEvent = await eventRepository.create({sessionId, type, name, data});
+                    savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
                     events.push(savedToolCallEvent);
                     
                     // Save Tool Call Create Ticket Result Event
                     type = "tool_result";
                     data = toolResponse;
-                    savedToolResultEvent = await eventRepository.create({sessionId, type, name, data});
+                    savedToolResultEvent = await this.eventRepository.create({sessionId, type, name, data});
                     events.push(savedToolResultEvent);
                     
                     // Create Assistant Message
@@ -183,13 +191,13 @@ class ChatService {
                     priority,
                     contact
                 };
-            savedToolCallEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolCallEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolCallEvent);
                     
             // Save Tool Call Create Ticket Result Event
             type = "tool_result";
             data = toolResponse;
-            savedToolResultEvent = await eventRepository.create({sessionId, type, name, data});
+            savedToolResultEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedToolResultEvent);
                     
             // Create Assistant Message
@@ -213,12 +221,12 @@ class ChatService {
             type = "thought";
             name = "unknown_intent";
             data = { "intent": "UNKNOWN" };
-            savedThoughtEvent = await eventRepository.create({sessionId, type, name, data});
+            savedThoughtEvent = await this.eventRepository.create({sessionId, type, name, data});
             events.push(savedThoughtEvent);
         }
 
         // Save assistant message
-        savedAssistantMessage = await messageRepository.create({sessionId, role: "ASSISTANT", content: assistantMessage, metadata}); 
+        savedAssistantMessage = await this.messageRepository.create({sessionId, role: "ASSISTANT", content: assistantMessage, metadata}); 
         
         // Reply
         return {

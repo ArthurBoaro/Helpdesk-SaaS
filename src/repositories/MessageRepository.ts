@@ -18,7 +18,7 @@ class MessageRepository {
                 sessionId,
                 role,
                 content,
-                metadata
+                metadata: metadata ?? null
             }
         });
     }

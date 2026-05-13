@@ -1,45 +1,17 @@
-import Fastify from "fastify";
-import { routes } from "./routes.js";
-import cors from "@fastify/cors";
+import { app } from "./app.js";
 
-
-// Initialize Fastify instance with logger
-const app = Fastify({logger: true});
-
-// Create Error Handler
-app.setErrorHandler((error, request, reply) => {
-
-    // Handle application errors
-    if (error instanceof Error) {
-        return reply.code(400).send({ message: error.message });
-    }
-
-    // Fallback for unknown errors
-    return reply.code(400).send({
-        message: "Erro desconhecido."
-    });
-    
-})
-
-// Initialize Server
 const start = async () => {
-
-    // Initialize Cors and routes
-    await app.register(cors);
-    await app.register(routes);
- 
+    // Start Http server on port
     try {
-        // Start Http server on port
         await app.listen({
             port: 3333,
             host: "0.0.0.0"
-        })
+        });
+    // Stop application if server fails
     } catch {
-        // Stop application if server fails
         process.exit(1);
     }
 
 };
-
-// Start application
+// Start server
 start();
