@@ -73,7 +73,7 @@ Além disso, o fluxo do chat registra:
 ### 1. Clonar o repositório
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ArthurBoaro/Helpdesk-SaaS.git
 ```
 
 ---
